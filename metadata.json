@@ -1,0 +1,6 @@
+{
+  "name": "DESC Bot - Tutor de Comunicación Asertiva",
+  "description": "Tutor interactivo y simulador de la Técnica DESC para resolver conflictos académicos e interpersonales con asertividad, firmeza y respeto.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
