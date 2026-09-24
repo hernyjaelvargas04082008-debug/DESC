@@ -24,6 +24,7 @@ import {
 import { PracticeCase, PracticeEvaluation, UserStats } from '../types/desc';
 import { INITIAL_CASES } from '../data/presetCases';
 import { triggerAssertiveCelebration } from '../utils/confetti';
+import { evaluateLocally, getRandomPresetCase } from '../utils/descEngine';
 
 interface SimulatorViewProps {
   stats: UserStats;
@@ -97,7 +98,21 @@ export const SimulatorView: React.FC<SimulatorViewProps> = ({ stats, onUpdateSta
       if (evalData.puntajeGlobal >= 4) {
         triggerAssertiveCelebration();
       }
+    } catch (err: any) {
+      console.warn('Backend evaluador no disponible, aplicando evaluación local inteligente:', err);
+      const localEval = evaluateLocally(
+        `${currentCase.titulo}: ${currentCase.descripcionCaso}`,
+        userResponse,
+        { d: guidedD, e: guidedE, s: guidedS, c: guidedC }
+      );
+      setEvaluation(localEval);
+      onUpdateStats(localEval.puntajeGlobal);
 
+      if (localEval.puntajeGlobal >= 4) {
+        triggerAssertiveCelebration();
+      }
+    } finally {
+      setIsEvaluating(false);
       // Smooth scroll to evaluation container
       setTimeout(() => {
         const el = document.getElementById('evaluation-result-card');
@@ -105,11 +120,6 @@ export const SimulatorView: React.FC<SimulatorViewProps> = ({ stats, onUpdateSta
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
-    } catch (err: any) {
-      console.error(err);
-      setErrorMessage(err.message || 'No se pudo conectar con el evaluador.');
-    } finally {
-      setIsEvaluating(false);
     }
   };
 
@@ -165,8 +175,22 @@ export const SimulatorView: React.FC<SimulatorViewProps> = ({ stats, onUpdateSta
       setGuidedC('');
       setShowTrapHint(false);
     } catch (err: any) {
-      console.error(err);
-      setErrorMessage('Error al generar un nuevo caso con IA.');
+      console.warn('API de generación de casos no disponible, seleccionando caso de práctica:', err);
+      const preset = getRandomPresetCase();
+      // create variation with fresh id
+      const randomizedCase: PracticeCase = {
+        ...preset,
+        id: `case-random-${Date.now()}`,
+      };
+      setCasesList((prev) => [randomizedCase, ...prev]);
+      setCurrentCaseIndex(0);
+      setEvaluation(null);
+      setFreeText('');
+      setGuidedD('');
+      setGuidedE('');
+      setGuidedS('');
+      setGuidedC('');
+      setShowTrapHint(false);
     } finally {
       setIsGeneratingCase(false);
     }

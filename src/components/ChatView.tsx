@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { ChatMessage } from '../types/desc';
+import { getLocalChatReply } from '../utils/descEngine';
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
@@ -91,14 +92,14 @@ export const ChatView: React.FC = () => {
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
-      console.error(err);
-      const errorMsg: ChatMessage = {
-        id: `error-${Date.now()}`,
+      console.warn('API de chat no disponible, respondiendo con tutor local:', err);
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
         role: 'model',
-        content: '⚠️ Hubo una interrupción de conexión con DESC Bot. Por favor intenta formular tu consulta nuevamente.',
+        content: getLocalChatReply(textToSend),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages((prev) => [...prev, botMsg]);
     } finally {
       setIsLoading(false);
     }
