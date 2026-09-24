@@ -602,9 +602,11 @@ Responde de manera empática, didáctica y concisa usando Markdown y emojis.
   }
 });
 
-// Register routes under both '/api' and '/'
-// This ensures that whether Vercel preserves or strips the '/api' prefix, all calls resolve!
 app.use('/api', apiRouter);
-app.use(apiRouter);
+
+// Only fallback on root '/' inside Vercel serverless environment (never locally)
+if (process.env.VERCEL) {
+  app.use(apiRouter);
+}
 
 export default app;
